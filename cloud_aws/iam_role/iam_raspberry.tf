@@ -1,7 +1,3 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
 resource "aws_iam_role" "raspberry_pi_role" {
   name = "RaspberryPiRole"
 
