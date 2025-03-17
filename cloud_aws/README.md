@@ -38,3 +38,30 @@ terraform apply -target=aws_security_group.elb_sg -auto-approve
 cd aws_kinesis_video_stream/
 terraform init 
 terraform apply -target=aws_kinesis_video_stream.video_stream -auto-approve
+
+## IAM ROLES
+
+cd iam_role/ec2
+terraform init 
+terraform plan -out ec2.out
+terraform apply "ec2.out"
+
+cd iam_role/grant
+terraform init 
+terraform plan -out grant.out
+terraform apply "grant.out"
+
+cd iam_role/iot
+terraform init 
+terraform plan -out iot.out
+terraform apply "iot.out"
+
+cd iam_role/lambda
+terraform init 
+terraform plan -out lambda.out
+terraform apply "lambda.out"
+
+cd iam_role/raspberry
+terraform init 
+terraform plan -out raspberry.out
+terraform apply "raspberry.out"
