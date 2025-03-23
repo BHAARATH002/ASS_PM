@@ -12,3 +12,4 @@ terraform.tfstate.backup
 *.crt
 *.jpg
 cloud_aws/iam_role/iot/iot.out
+*Policy
