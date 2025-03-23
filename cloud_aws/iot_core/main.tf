@@ -1,6 +1,3 @@
-provider "aws" {
-  region = "us-east-1"
-}
 resource "aws_iot_topic_rule" "iot_rule" {
   name        = "intruder_alert_rule"
   description = "Processes intruder alerts"
@@ -9,6 +6,6 @@ resource "aws_iot_topic_rule" "iot_rule" {
   sql_version = "2016-03-23"
 
   lambda {
-    function_arn = aws_lambda_function.intruder_alert.arn
+    function_arn = "arn:aws:lambda:us-east-1:746441023300:function:IntruderAlertLambda"
   }
 }

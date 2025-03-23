@@ -1,13 +1,88 @@
+# Fetch the VPC
+data "aws_vpc" "main" {
+  filter {
+    name   = "tag:Name"
+    values = ["main-vpc"]  # Change this to your VPC name or use VPC ID directly
+  }
+}
+
+# Get all subnets in the VPC
+data "aws_subnets" "all_subnets" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.main.id]
+  }
+}
+
+# Fetch the public route table (one that has a route to IGW)
+data "aws_route_table" "public_rt" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.main.id]
+  }
+
+  filter {
+    name   = "route.gateway-id"
+    values = ["igw-06c0e2f2a85adf3a4"]  # Replace with your IGW ID
+  }
+}
+
+# Fetch public subnets (subnets associated with the public route table)
+data "aws_subnet" "public_subnets" {
+  count = length(data.aws_subnets.all_subnets.ids)
+  
+  id = data.aws_subnets.all_subnets.ids[count.index]
+}
+
+data "aws_security_group" "web_sg" {
+  filter {
+    name   = "group-name"
+    values = ["web-security-group"]  # Replace with actual EC2 SG name
+  }
+}
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["amazon"]
+}
+
 resource "aws_launch_template" "web_server" {
   name_prefix   = "web-server"
-  image_id      = "ami-12345678"  # Replace with latest Amazon Linux AMI
+  image_id      = data.aws_ami.amazon_linux.id  # Dynamically fetch AMI
   instance_type = "t3.micro"
-  key_name      = "your-key"  # Replace with your key pair
-  user_data     = base64encode("#!/bin/bash\nyum install -y httpd\nservice httpd start")
+  key_name      = "control"  # Replace with your key pair
+  user_data     = base64encode(<<-EOF
+              #!/bin/bash
+              yum update -y
+              yum install -y httpd
+              echo "<h1>Hello, World! from $(hostname -f)</h1>" > /var/www/html/index.html
+              systemctl start httpd
+              systemctl enable httpd
+              EOF
+  )
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.web_sg.id]
+    security_groups             = [data.aws_security_group.web_sg.id]
+  }
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name        = "WebServerInstance"
+      Owner       = "Bhaarathan"
+    }
   }
 }
 
@@ -18,25 +93,25 @@ resource "aws_autoscaling_group" "asg" {
   }
 
   min_size = 1
-  max_size = 2
+  max_size = 1
   desired_capacity = 1
 
-  vpc_zone_identifier = ["subnet-12345678", "subnet-87654321"]
+  vpc_zone_identifier = [for s in data.aws_subnet.public_subnets : s.id]
 }
 
 resource "aws_lb" "web_elb" {
   name               = "web-elb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.elb_sg.id]
-  subnets           = ["subnet-12345678", "subnet-87654321"]
+  security_groups    = [data.aws_security_group.web_sg.id]
+  subnets           = [for s in data.aws_subnet.public_subnets : s.id]
 }
 
 resource "aws_lb_target_group" "tg" {
   name     = "web-target-group"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = "vpc-12345678"
+  vpc_id   = data.aws_vpc.main.id
 }
 
 resource "aws_lb_listener" "web_listener" {
