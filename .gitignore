@@ -1,0 +1,12 @@
+.DS_Store
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+autoscaling_elb.out
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+*.out
+*.pem
+*.tfstate
+*.key
+*.crt
