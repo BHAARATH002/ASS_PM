@@ -5,9 +5,8 @@ Commands to execute for each service:
 ```sh
 cd autoscaling_elb/ 
 terraform init 
-terraform apply -target=aws_launch_template.web_server -auto-approve 
-terraform apply -target=aws_autoscaling_group.asg -auto-approve 
-terraform apply -target=aws_lb.web_elb -auto-approve
+terraform plan -out autoscaling_elb.out
+terraform apply "autoscaling_elb.out"
 
 cd rds/
 terraform init 

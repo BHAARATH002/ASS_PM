@@ -1,6 +1,6 @@
 resource "aws_security_group" "web_sg" {
   name        = "web-security-group"
-  description = "Allow HTTP, SSH, and MQTT"
+  description = "Allow HTTP, SSH, API and MQTT"
 
   ingress {
     from_port   = 80
@@ -21,6 +21,13 @@ resource "aws_security_group" "web_sg" {
     to_port     = 8883
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]  # MQTT over TLS
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # API
   }
 
   egress {

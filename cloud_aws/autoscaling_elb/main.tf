@@ -107,26 +107,48 @@ resource "aws_lb" "web_elb" {
   subnets           = [for s in data.aws_subnet.public_subnets : s.id]
 }
 
-resource "aws_lb_target_group" "tg" {
-  name     = "web-target-group"
+resource "aws_lb_target_group" "tg_80" {
+  name     = "web-target-group-80"
   port     = 80
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.main.id
 }
 
-resource "aws_lb_listener" "web_listener" {
+# Target Group for port 8080
+resource "aws_lb_target_group" "tg_8080" {
+  name     = "web-target-group-8080"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = data.aws_vpc.main.id
+}
+
+resource "aws_lb_listener" "web_listener_80" {
   load_balancer_arn = aws_lb.web_elb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg.arn
+    target_group_arn = aws_lb_target_group.tg_80.arn
   }
 }
 
-resource "aws_autoscaling_attachment" "asg_attachment" {
-  autoscaling_group_name = aws_autoscaling_group.asg.id
-  lb_target_group_arn    = aws_lb_target_group.tg.arn
+resource "aws_lb_listener" "web_listener_8080" {
+  load_balancer_arn = aws_lb.web_elb.arn
+  port              = 8080
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_8080.arn
+  }
 }
 
+resource "aws_autoscaling_attachment" "asg_attachment_80" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  lb_target_group_arn    = aws_lb_target_group.tg_80.arn
+}
+resource "aws_autoscaling_attachment" "asg_attachment_8080" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  lb_target_group_arn    = aws_lb_target_group.tg_8080.arn
+}
