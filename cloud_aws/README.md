@@ -30,6 +30,12 @@ terraform plan -out iot_core.out
 terraform apply "iot_core.out"
 
 cd lambda/
+mkdir requests_layer
+cd requests_layer
+pip install requests -t .
+zip -r requests_layer.zip .
+# Move the requests_layer.zip to lambda folder
+zip -r requests_layer.zip lambda_funciton.py
 terraform init 
 terraform plan -out lambda_funciton.out
 terraform apply "lambda_funciton.out"

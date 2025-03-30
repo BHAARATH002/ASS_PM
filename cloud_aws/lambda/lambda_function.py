@@ -1,7 +1,7 @@
 import json
 import boto3
 import base64
-# import time
+import time
 import requests
 from datetime import datetime
 
@@ -28,12 +28,6 @@ def lambda_handler(event, context):
     video_data = base64.b64decode(intruder_data["video_data"])
     video_type = intruder_data["video_type"]
     video_file_size = len(video_data)
-    # device_id = "device_001"
-    # timestamp = int(time.time())
-    # image_data = base64.b64decode("")
-    # image_type = "image"
-    # video_data = base64.b64decode("")
-    # video_type = "video"
     
     # Store data to S3
     image_key = f"{image_type}/{device_id}/{timestamp}.jpg"
@@ -51,7 +45,7 @@ def lambda_handler(event, context):
     })
     
     # Send info to APP via API
-    formatted_time = convert_epoch_to_datetime(epoch_time)
+    formatted_time = convert_epoch_to_datetime(timestamp)
     # Define the JSON payload
     payload = {
         "deviceData": [
@@ -83,10 +77,10 @@ def lambda_handler(event, context):
     }
 
     # Send the POST request
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
+    response = requests.post(APP_API, headers=headers, data=json.dumps(payload))
 
     # Send notification to user via SNS topic
-    message = f"🚨 Intruder detected!\nDevice: {device_id}\nTime: {timestamp}\nImage: {image_key}\nVideo: {video_key}"
-    sns.publish(TopicArn=SNS_TOPIC_ARN, Message=message, Subject="🚨 Intruder Alert!")
+    # message = f"🚨 Intruder detected!\nDevice: {device_id}\nTime: {timestamp}\nImage: {image_key}\nVideo: {video_key}"
+    # sns.publish(TopicArn=SNS_TOPIC_ARN, Message=message, Subject="🚨 Intruder Alert!")
 
     return {"statusCode": 200, "body": "Alert Processed"}
