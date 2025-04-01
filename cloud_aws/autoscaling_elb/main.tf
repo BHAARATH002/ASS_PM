@@ -57,6 +57,10 @@ data "aws_ami" "amazon_linux" {
   owners = ["amazon"]
 }
 
+data "aws_iam_instance_profile" "web_instance_profile" {
+  name = "WebServerInstanceProfile"
+}
+
 resource "aws_launch_template" "web_server" {
   name_prefix   = "web-server"
   image_id      = data.aws_ami.amazon_linux.id  # Dynamically fetch AMI
@@ -71,6 +75,11 @@ resource "aws_launch_template" "web_server" {
               systemctl enable httpd
               EOF
   )
+
+  iam_instance_profile {
+    name = data.aws_iam_instance_profile.web_instance_profile.name
+  }
+
 
   network_interfaces {
     associate_public_ip_address = true
