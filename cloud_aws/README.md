@@ -1,6 +1,6 @@
 # Instruction on Cloud Tier
 
-Please follow the steps.
+Please follow the steps and user Terraform version 1.5.7
 Commands to execute for each service:
 
 ```sh
