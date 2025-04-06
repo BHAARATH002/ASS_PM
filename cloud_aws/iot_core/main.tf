@@ -39,19 +39,29 @@ resource "aws_iot_policy" "intruder_thing_policy" {
       },
       {
         Effect   = "Allow",
-        Action   = ["iot:Publish"],
+        Action   = [
+            "iot:Publish",
+            "iot:Receive",
+            "iot:Subscribe",
+            "iot:PublishRetain"
+            ],
         Resource = [
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/java",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python",
+          "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python1",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/js"
         ]
       },
       {
         Effect   = "Allow",
-        Action   = ["iot:Subscribe"],
+        Action   = [
+            "iot:Subscribe",
+            "iot:Receive"
+            ],
         Resource = [
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/java",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/python",
+          "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python1",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/js"
         ]
       }
@@ -74,10 +84,72 @@ resource "aws_iot_policy_attachment" "intruder_policy_attachment" {
 resource "aws_iot_topic_rule" "intruder_rule" {
   name        = "IntruderRule"
   enabled     = true
-  sql         = "SELECT * FROM 'intruder/topic'"
+  sql         = "SELECT * FROM 'sdk/test/python'"
   sql_version = "2016-03-23"
 
   lambda {
     function_arn = "arn:aws:lambda:us-east-1:${var.aws_account_id}:function:IntruderAlertLambda"
   }
+}
+
+resource "aws_cloudwatch_log_group" "iot_logs" {
+  name              = "AWSIotLogsV2"
+  retention_in_days = 30
+}
+
+resource "aws_iam_role" "iot_reply_role" {
+  name = "IOT_reply_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "iot.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "iot_rule_policy" {
+  name        = "aws-iot-rule-Lambda_To_Device-action-1-role-IOT_reply_role"
+  description = "IAM policy for IoT rule to send logs to CloudWatch"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          "arn:aws:logs:us-east-1:746441023300:log-group:AWSIotLogsV2:*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "iot_reply_role_attach" {
+  role       = aws_iam_role.iot_reply_role.name
+  policy_arn = aws_iam_policy.iot_rule_policy.arn
+}
+
+resource "aws_iot_topic_rule" "intruder_rule_outgoing" {
+    enabled     = true
+    name        = "Lambda_To_Device"
+    sql         = "SELECT * FROM 'sdk/test/python1'"
+    sql_version = "2016-03-23"
+
+    cloudwatch_logs {
+        batch_mode     = false
+        log_group_name = aws_cloudwatch_log_group.iot_logs.name
+        role_arn       = aws_iam_role.iot_reply_role.arn
+    }
 }

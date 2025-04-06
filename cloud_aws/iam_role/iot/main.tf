@@ -49,6 +49,19 @@ resource "aws_iam_policy" "iot_policy" {
         Effect   = "Allow"
         Action   = "iot:Receive"
         Resource = "arn:aws:iot:us-east-1:746441023300:topic/intruder/alert"
+      },
+      {
+          "Effect": "Allow",
+          "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents",
+              "logs:PutMetricFilter",
+              "logs:PutRetentionPolicy"
+          ],
+          "Resource": [
+              "arn:aws:logs:*:746441023300:log-group:*:log-stream:*"
+          ]
       }
     ]
   })
