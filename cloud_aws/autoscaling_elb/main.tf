@@ -68,11 +68,22 @@ resource "aws_launch_template" "web_server" {
   key_name      = "control"  # Replace with your key pair
   user_data     = base64encode(<<-EOF
               #!/bin/bash
-              yum update -y
-              yum install -y httpd
+              sudo yum update -y
+              # Install Java 17 (Amazon Corretto)
+              sudo amazon-linux-extras enable corretto17
+              sudo yum install -y java-17-amazon-corretto-devel
+              # Verify Java installation
+              java -version
+              # Install Redis
+              sudo amazon-linux-extras enable redis6
+              sudo yum install -y redis
+              sudo systemctl enable redis
+              sudo systemctl start redis
+              # Install Apache Web Server
+              sudo yum install -y httpd
               echo "<h1>Hello, World! from $(hostname -f)</h1>" > /var/www/html/index.html
-              systemctl start httpd
-              systemctl enable httpd
+              sudo systemctl start httpd
+              sudo systemctl enable httpd
               EOF
   )
 
@@ -93,6 +104,9 @@ resource "aws_launch_template" "web_server" {
       Owner       = "Bhaarathan"
     }
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_autoscaling_group" "asg" {
@@ -106,6 +120,20 @@ resource "aws_autoscaling_group" "asg" {
   desired_capacity = 1
 
   vpc_zone_identifier = [for s in data.aws_subnet.public_subnets : s.id]
+
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 75
+    }
+    triggers = ["launch_configuration", "desired_capacity"] # Ensures it triggers on changes
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "WebServerInstance"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_lb" "web_elb" {
