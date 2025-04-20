@@ -93,6 +93,7 @@ Enter your AWS account number
 terraform apply "iot_core.out"
 
 ## EC2 autosclaing ELB
+# Includes Java 17, Redis and Apache Web Server
 cd autoscaling_elb/ 
 terraform init 
 terraform plan -out autoscaling_elb.out
