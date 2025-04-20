@@ -98,6 +98,16 @@ terraform init
 terraform plan -out autoscaling_elb.out
 terraform apply "autoscaling_elb.out"
 
+## Amazon Managed Grafana
+Follow the steps in the link: https://docs.aws.amazon.com/grafana/latest/userguide/AMG-create-workspace.html
+
+cd grafana/ 
+terraform init 
+terraform plan -out grafana.out
+terraform apply "grafana.out"
+
+Import the dashboards via the Grafana UI Page
+
 ## 7) AWS Kinesis (Optional)
 cd aws_kinesis_video_stream/
 terraform init 

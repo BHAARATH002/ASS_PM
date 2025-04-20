@@ -13,3 +13,8 @@ terraform.tfstate.backup
 *.jpg
 cloud_aws/iam_role/iot/iot.out
 *Policy
+*.mp4
+start.sh
+simple.py
+sample_test_to_iot_core.py
+import.tf.bak
