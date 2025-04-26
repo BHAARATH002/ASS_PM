@@ -100,6 +100,10 @@ terraform plan -out autoscaling_elb.out
 terraform apply "autoscaling_elb.out"
 
 ## Amazon Managed Grafana
+cd grafana/ 
+terraform init 
+terraform plan -out grafana.out
+terraform apply "grafana.out"
 Follow the steps in the link: https://docs.aws.amazon.com/grafana/latest/userguide/AMG-create-workspace.html
 
 cd grafana/ 
