@@ -92,14 +92,14 @@ terraform plan -out iot_core.out
 Enter your AWS account number
 terraform apply "iot_core.out"
 
-## EC2 autosclaing ELB
+## 7) EC2 autosclaing ELB
 # Includes Java 17, Redis and Apache Web Server
 cd autoscaling_elb/ 
 terraform init 
 terraform plan -out autoscaling_elb.out
 terraform apply "autoscaling_elb.out"
 
-## Amazon Managed Grafana
+## 8) Amazon Managed Grafana
 cd grafana/ 
 terraform init 
 terraform plan -out grafana.out
@@ -140,12 +140,12 @@ terraform apply "grafana.out"
 
 Import the dashboards via the Grafana UI Page
 
-## 7) AWS Kinesis (Optional)
+## 9) AWS Kinesis (Optional)
 cd aws_kinesis_video_stream/
 terraform init 
 terraform apply -target=aws_kinesis_video_stream.video_stream -auto-approve
 
-## 8) EC2 Bastion host (Optional)
+## 10) EC2 Bastion host (Optional)
 Setup Bastion host to access the rds and web-ec2 insatnces:
 terraform init
 terraform plan -out bastion_host.out
