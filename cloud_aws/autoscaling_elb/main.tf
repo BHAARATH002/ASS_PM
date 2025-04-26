@@ -64,7 +64,7 @@ data "aws_iam_instance_profile" "web_instance_profile" {
 resource "aws_launch_template" "web_server" {
   name_prefix   = "web-server"
   image_id      = data.aws_ami.amazon_linux.id  # Dynamically fetch AMI
-  instance_type = "t3.micro"
+  instance_type = "t3.medium"
   key_name      = "control"  # Replace with your key pair
   user_data     = base64encode(<<-EOF
               #!/bin/bash
