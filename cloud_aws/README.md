@@ -109,6 +109,30 @@ Videos:
 https://www.youtube.com/watch?v=t3g17ye6drI
 https://www.youtube.com/watch?v=KNRTY2_xQ3I
 
+Step 1: Set Up AWS IAM Identity Center (SSO)
+Amazon Managed Grafana uses AWS IAM Identity Center (formerly AWS SSO) for user authentication.
+1)  Go to AWS IAM Identity Center Console:
+    https://console.aws.amazon.com/singlesignon/
+2)  Create a New User:
+    - Go to Users → Add user
+    - Fill in the user's email, username, and assign a password.
+    - (Optional) Add them to a Group.
+
+Step 2: Assign the User to the Grafana Workspace
+1)  Go to the Amazon Managed Grafana Console:
+    https://console.aws.amazon.com/grafana/
+2)  Select your Grafana workspace.
+3)  Click on "Assign new users and groups".
+4)  Choose the IAM Identity Center user or group you created.
+5)  Assign a role:
+    - Admin: Full access
+    - Editor: Can create/edit dashboards
+    - Viewer: Read-only access
+
+Step 3: User Logs In
+1)  The user goes to the Grafana workspace URL provided in the console.
+2)  Logs in with their IAM Identity Center credentials.
+
 cd grafana/ 
 terraform init 
 terraform plan -out grafana.out
