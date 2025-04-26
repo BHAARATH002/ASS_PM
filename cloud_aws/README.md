@@ -105,7 +105,9 @@ terraform init
 terraform plan -out grafana.out
 terraform apply "grafana.out"
 Follow the steps in the link: https://docs.aws.amazon.com/grafana/latest/userguide/AMG-create-workspace.html
-Videos: https://www.youtube.com/watch?v=t3g17ye6drI
+Videos:
+https://www.youtube.com/watch?v=t3g17ye6drI
+https://www.youtube.com/watch?v=KNRTY2_xQ3I
 
 cd grafana/ 
 terraform init 
