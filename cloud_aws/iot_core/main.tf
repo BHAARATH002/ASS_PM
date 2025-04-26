@@ -82,7 +82,7 @@ resource "aws_iot_policy_attachment" "intruder_policy_attachment" {
 }
 
 resource "aws_iot_topic_rule" "intruder_rule" {
-  name        = "IntruderRule"
+  name        = "Intruder_To_Lambda"
   enabled     = true
   sql         = "SELECT * FROM 'sdk/test/python'"
   sql_version = "2016-03-23"
