@@ -157,6 +157,16 @@ resource "aws_lb_target_group" "tg_8080" {
   port     = 8080
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.main.id
+
+  health_check {
+    path                = "/actuator/health"
+    interval            = 30  # Interval in seconds
+    timeout             = 5   # Timeout in seconds
+    healthy_threshold   = 3   # Number of successful checks before considered healthy
+    unhealthy_threshold = 3   # Number of failed checks before considered unhealthy
+    protocol            = "HTTP"
+    port                = "traffic-port"  # You can use the traffic port or specify a custom port
+  }
 }
 
 # Target Group for port 81
