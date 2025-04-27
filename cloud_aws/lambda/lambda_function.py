@@ -17,7 +17,31 @@ sns = boto3.client("sns")
 TABLE_NAME = "intruderLogs"
 BUCKET_NAME = "intruder-images-bucket"
 SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:746441023300:intruder-alerts"
-APP_API = "http://web-elb-1385983805.us-east-1.elb.amazonaws.com:8080/api/alerts"
+APP_API = "http://web-elb-1385983805.us-east-1.elb.amazonaws.com:8080"
+
+def get_token():
+    # Get tokem the POST request
+    # Define the JSON payload
+    payloadUserInfo = {
+        "username": "IoTMachine",
+        "password": "IoTMachine"
+    }
+    # Set headers
+    headersToken = {
+        "Content-Type": "application/json"
+    }
+    try:
+        responseToken = requests.post(f"{APP_API}/api/users/login", headers=headersToken, data=json.dumps(payloadUserInfo), timeout=10)
+        responseToken.raise_for_status()
+        response_json = responseToken.json()
+        token = response_json.get('data')
+        print(f"API response: {responseToken.status_code}, {responseToken.text}, token: {token}")
+        return token
+    except requests.exceptions.RequestException as e:
+        print(f"StatusCode: E007, ERROR:{str(e)}")
+        error_message = f"Invalid APP API Autnentication: {device_id}"
+        publish_mqtt_response(iot_client, error_message, "E007")
+        return {"statusCode": 500, "error": error_message}
 
 def convert_epoch_to_datetime(epoch_timestamp):
     """Converts an epoch timestamp to 'YYYY-MM-DD HH:MM:SS' format."""
@@ -50,6 +74,7 @@ def lambda_handler(event, context):
     
     # Validate required fields
     if not device_id or not timestamp or not image_data:
+        print(f"StatusCode: E001, ERROR: Missing required fields: device_id, timestamp, or image_data.")
         error_message = "Missing required fields: device_id, timestamp, or image_data."
         publish_mqtt_response(iot_client, error_message, "E001")
         return {"statusCode": 400, "error": error_message}
@@ -62,7 +87,8 @@ def lambda_handler(event, context):
         s3.put_object(Bucket=BUCKET_NAME, Key=image_key, Body=image_data)
         print(f"Image stored at S3: {image_key}")
     except Exception as e:
-        error_message = f"Failed to store image in S3: {str(e)}"
+        print(f"StatusCode: E003, ERROR: {str(e)}")
+        error_message = f"Failed to store image in S3: {image_key}"
         publish_mqtt_response(iot_client, error_message, "E003")
         return {"statusCode": 500, "error": error_message}
 
@@ -77,24 +103,25 @@ def lambda_handler(event, context):
         })
         print(f"Log stored in DynamoDB: {device_id}, {timestamp}")
     except Exception as e:
-        error_message = f"Failed to store log in DynamoDB: {str(e)}"
+        print(f"StatusCode: E004, ERROR:{str(e)}")
+        error_message = f"Failed to store log in DynamoDB: {device_id}"
         publish_mqtt_response(iot_client, error_message, "E004")
         return {"statusCode": 500, "error": error_message}
-    
+
+    # Get Token for APP API
+    auth_token = get_token()
     # Send info to APP via API
     formatted_time = convert_epoch_to_datetime(timestamp)
     # Define the JSON payload
     payload = {
         "deviceData": [
             {
-                "deviceId": device_id,
                 "dataType": image_type,
                 "mediaUrl": image_key,
                 "fileSize": image_file_size,
                 "timestamp": formatted_time
             },
             {
-                "deviceId": device_id,
                 "dataType": video_type,
                 "mediaUrl": video_key,
                 "fileSize": video_file_size,
@@ -102,8 +129,7 @@ def lambda_handler(event, context):
             }
         ],
         "deviceId": device_id,
-        "alertType": "intrusion",
-        "alertMessage": "intruder found.",
+        "alertMessage": "Intruder found. Please response!",
         "alertTitle": "Critical intruder Alert",
         "severityLevel": "high",
         "alertDatetime": formatted_time
@@ -111,15 +137,17 @@ def lambda_handler(event, context):
     print(f"Payload: {payload}")
     # Set headers
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {auth_token}"
     }
     # Send the POST request
     try:
-        response = requests.post(APP_API, headers=headers, data=json.dumps(payload), timeout=10)
+        response = requests.post(f"{APP_API}/api/alerts", headers=headers, data=json.dumps(payload), timeout=10)
         response.raise_for_status()
         print(f"API response: {response.status_code}, {response.text}")
     except requests.exceptions.RequestException as e:
-        error_message = f"Failed to send alert to APP API: {str(e)}"
+        print(f"StatusCode: E005, ERROR:{str(e)}")
+        error_message = f"Failed to send alert to APP API: {device_id}"
         publish_mqtt_response(iot_client, error_message, "E005")
         return {"statusCode": 500, "error": error_message}
 
@@ -129,7 +157,8 @@ def lambda_handler(event, context):
         sns.publish(TopicArn=SNS_TOPIC_ARN, Message=message, Subject="🚨 Intruder Alert!")
         print(f"Notification sent via SNS: {message}")
     except Exception as e:
-        error_message = f"Failed to send SNS notification: {str(e)}"
+        print(f"StatusCode: E006, ERROR:{str(e)}")
+        error_message = f"Failed to send SNS notification: {device_id}"
         publish_mqtt_response(iot_client, error_message, "E006")
         return {"statusCode": 500, "error": error_message}
 

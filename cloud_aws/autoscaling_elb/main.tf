@@ -159,6 +159,14 @@ resource "aws_lb_target_group" "tg_8080" {
   vpc_id   = data.aws_vpc.main.id
 }
 
+# Target Group for port 81
+resource "aws_lb_target_group" "tg_81" {
+  name     = "web-target-group-81"
+  port     = 81
+  protocol = "HTTP"
+  vpc_id   = data.aws_vpc.main.id
+}
+
 resource "aws_lb_listener" "web_listener_80" {
   load_balancer_arn = aws_lb.web_elb.arn
   port              = 80
@@ -181,6 +189,17 @@ resource "aws_lb_listener" "web_listener_8080" {
   }
 }
 
+resource "aws_lb_listener" "web_listener_81" {
+  load_balancer_arn = aws_lb.web_elb.arn
+  port              = 81
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_81.arn
+  }
+}
+
 resource "aws_autoscaling_attachment" "asg_attachment_80" {
   autoscaling_group_name = aws_autoscaling_group.asg.id
   lb_target_group_arn    = aws_lb_target_group.tg_80.arn
@@ -188,4 +207,8 @@ resource "aws_autoscaling_attachment" "asg_attachment_80" {
 resource "aws_autoscaling_attachment" "asg_attachment_8080" {
   autoscaling_group_name = aws_autoscaling_group.asg.id
   lb_target_group_arn    = aws_lb_target_group.tg_8080.arn
+}
+resource "aws_autoscaling_attachment" "asg_attachment_81" {
+  autoscaling_group_name = aws_autoscaling_group.asg.id
+  lb_target_group_arn    = aws_lb_target_group.tg_81.arn
 }
