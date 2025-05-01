@@ -34,7 +34,7 @@ resource "aws_db_instance" "rds" {
   allocated_storage   = 20
   username           = "admin"
   password           = "930485bd7ncxbh"
-  publicly_accessible = true
+  publicly_accessible = false
   multi_az           = true
   vpc_security_group_ids = [data.aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
