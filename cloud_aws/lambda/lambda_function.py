@@ -19,7 +19,7 @@ BUCKET_NAME = "intruder-images-bucket"
 SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:746441023300:intruder-alerts"
 APP_API = "http://web-elb-1385983805.us-east-1.elb.amazonaws.com:8080"
 
-def get_token():
+def get_token(iot_client, device_id):
     # Get tokem the POST request
     # Define the JSON payload
     decoded_bytes = base64.b64decode('SW9UTWFjaGluZQ==')
@@ -111,7 +111,7 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "error": error_message}
 
     # Get Token for APP API
-    auth_token = get_token()
+    auth_token = get_token(iot_client, device_id)
     # Send info to APP via API
     formatted_time = convert_epoch_to_datetime(timestamp)
     # Define the JSON payload
@@ -171,5 +171,5 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps(f'Message processed and response published for {device_id}!')
+        'body': json.dumps(f'Message processed and response published for Device: {device_id}!')
     }
