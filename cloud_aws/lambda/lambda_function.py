@@ -22,9 +22,11 @@ APP_API = "http://web-elb-1385983805.us-east-1.elb.amazonaws.com:8080"
 def get_token():
     # Get tokem the POST request
     # Define the JSON payload
+    decoded_bytes = base64.b64decode('SW9UTWFjaGluZQ==')
+    decoded_password = decoded_bytes.decode('utf-8')
     payloadUserInfo = {
         "username": "IoTMachine",
-        "password": "IoTMachine"
+        "password": decoded_password
     }
     # Set headers
     headersToken = {
