@@ -1,0 +1,268 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 6,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "fej9hbao6xrlsf"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "options": {
+          "cellHeight": "sm",
+          "footer": {
+            "countRows": false,
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "10.4.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "cloudwatch",
+              "uid": "fej9hbao6xrlsf"
+            },
+            "dimensions": {},
+            "expression": "fields @timestamp, @message |\n sort @timestamp desc",
+            "id": "",
+            "label": "",
+            "logGroups": [
+              {
+                "accountId": "746441023300",
+                "arn": "arn:aws:logs:us-east-1:746441023300:log-group:device_state:*",
+                "name": "device_state"
+              }
+            ],
+            "matchExact": true,
+            "metricEditorMode": 0,
+            "metricName": "",
+            "metricQueryType": 0,
+            "namespace": "",
+            "period": "",
+            "queryMode": "Logs",
+            "refId": "A",
+            "region": "us-east-1",
+            "sqlExpression": "",
+            "statistic": "Average",
+            "statsGroups": []
+          }
+        ],
+        "title": "Device State",
+        "transformations": [
+          {
+            "id": "extractFields",
+            "options": {
+              "format": "kvp",
+              "keepTime": true,
+              "replace": true,
+              "source": "@message"
+            }
+          }
+        ],
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "fej9hbao6xrlsf"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "status"
+              },
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {
+                      "options": {
+                        "0": {
+                          "color": "semi-dark-red",
+                          "index": 1,
+                          "text": "DOWN"
+                        },
+                        "1": {
+                          "color": "semi-dark-green",
+                          "index": 0,
+                          "text": "UP"
+                        }
+                      },
+                      "type": "value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 7,
+          "x": 0,
+          "y": 7
+        },
+        "id": 2,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "vertical",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "/.*/",
+            "values": false
+          },
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
+        },
+        "pluginVersion": "10.4.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "cloudwatch",
+              "uid": "fej9hbao6xrlsf"
+            },
+            "dimensions": {},
+            "expression": "fields @timestamp, deviceId, sensorType, status \r\n| stats count(*) as status by deviceId, sensorType",
+            "id": "",
+            "label": "",
+            "logGroups": [
+              {
+                "accountId": "746441023300",
+                "arn": "arn:aws:logs:us-east-1:746441023300:log-group:device_state:*",
+                "name": "device_state"
+              }
+            ],
+            "matchExact": true,
+            "metricEditorMode": 0,
+            "metricName": "",
+            "metricQueryType": 0,
+            "namespace": "",
+            "period": "",
+            "queryMode": "Logs",
+            "refId": "A",
+            "region": "us-east-1",
+            "sqlExpression": "",
+            "statistic": "Average",
+            "statsGroups": [
+              "deviceId",
+              "sensorType"
+            ]
+          }
+        ],
+        "title": "Device State",
+        "transformations": [
+          {
+            "id": "extractFields",
+            "options": {
+              "format": "kvp",
+              "keepTime": true,
+              "replace": true,
+              "source": "@message"
+            }
+          }
+        ],
+        "type": "stat"
+      }
+    ],
+    "refresh": "",
+    "schemaVersion": 39,
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Digital Twins",
+    "uid": "bekz2fsk7krnkc",
+    "version": 2,
+    "weekStart": ""
+  }

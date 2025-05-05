@@ -49,6 +49,7 @@ resource "aws_iot_policy" "intruder_thing_policy" {
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/java",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python1",
+          "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python2",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/js"
         ]
       },
@@ -61,7 +62,8 @@ resource "aws_iot_policy" "intruder_thing_policy" {
         Resource = [
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/java",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/python",
-          "arn:aws:iot:us-east-1:${var.aws_account_id}:topic/sdk/test/python1",
+          "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/python1",
+          "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/python1",
           "arn:aws:iot:us-east-1:${var.aws_account_id}:topicfilter/sdk/test/js"
         ]
       }
@@ -94,6 +96,11 @@ resource "aws_iot_topic_rule" "intruder_rule" {
 
 resource "aws_cloudwatch_log_group" "iot_logs" {
   name              = "AWSIotLogsV2"
+  retention_in_days = 30
+}
+
+resource "aws_cloudwatch_log_group" "iot_device_state_logs" {
+  name              = "device_state"
   retention_in_days = 30
 }
 
@@ -136,9 +143,36 @@ resource "aws_iam_policy" "iot_rule_policy" {
   })
 }
 
+resource "aws_iam_policy" "iot_rule_policy_device" {
+  name        = "aws-iot-rule-Device_state-action-1-role-IOT_reply_role"
+  description = "IAM policy for IoT rule to send logs to CloudWatch"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          "arn:aws:logs:us-east-1:746441023300:log-group:device_state:*"
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "iot_reply_role_attach" {
   role       = aws_iam_role.iot_reply_role.name
   policy_arn = aws_iam_policy.iot_rule_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "iot_reply_role_attach_policy2" {
+  role       = aws_iam_role.iot_reply_role.name
+  policy_arn = aws_iam_policy.iot_rule_policy_device.arn
 }
 
 resource "aws_iot_topic_rule" "intruder_rule_outgoing" {
@@ -150,6 +184,19 @@ resource "aws_iot_topic_rule" "intruder_rule_outgoing" {
     cloudwatch_logs {
         batch_mode     = false
         log_group_name = aws_cloudwatch_log_group.iot_logs.name
+        role_arn       = aws_iam_role.iot_reply_role.arn
+    }
+}
+
+resource "aws_iot_topic_rule" "device_state" {
+    enabled     = true
+    name        = "Device_state"
+    sql         = "SELECT * FROM 'sdk/test/python2'"
+    sql_version = "2016-03-23"
+
+    cloudwatch_logs {
+        batch_mode     = false
+        log_group_name = aws_cloudwatch_log_group.iot_device_state_logs.name
         role_arn       = aws_iam_role.iot_reply_role.arn
     }
 }
