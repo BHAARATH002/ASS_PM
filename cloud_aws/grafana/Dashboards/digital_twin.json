@@ -72,7 +72,13 @@
             ],
             "show": false
           },
-          "showHeader": true
+          "showHeader": true,
+          "sortBy": [
+            {
+              "desc": true,
+              "displayName": "Cloud Timestamp"
+            }
+          ]
         },
         "pluginVersion": "10.4.1",
         "targets": [
@@ -115,6 +121,30 @@
               "keepTime": true,
               "replace": true,
               "source": "@message"
+            }
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "device_id": true,
+                "image_data": true
+              },
+              "includeByName": {},
+              "indexByName": {
+                "Time": 1,
+                "deviceId": 2,
+                "sensorType": 3,
+                "status": 4,
+                "timestamp": 0
+              },
+              "renameByName": {
+                "Time": "Cloud Timestamp",
+                "deviceId": "Device ID",
+                "sensorType": "Sensor Type",
+                "status": "Status",
+                "timestamp": "Edge Server Timestamp"
+              }
             }
           }
         ],
@@ -177,8 +207,8 @@
           ]
         },
         "gridPos": {
-          "h": 4,
-          "w": 7,
+          "h": 7,
+          "w": 24,
           "x": 0,
           "y": 7
         },
@@ -192,10 +222,13 @@
             "calcs": [
               "lastNotNull"
             ],
-            "fields": "/.*/",
-            "values": false
+            "fields": "/^status$/",
+            "values": true
           },
           "showPercentChange": false,
+          "text": {
+            "titleSize": 8
+          },
           "textMode": "auto",
           "wideLayout": true
         },
@@ -207,7 +240,7 @@
               "uid": "fej9hbao6xrlsf"
             },
             "dimensions": {},
-            "expression": "fields @timestamp, deviceId, sensorType, status \r\n| stats count(*) as status by deviceId, sensorType",
+            "expression": "fields @timestamp, deviceId, sensorType, status \r\n| sort @timestamp desc\r\n| limit 5",
             "id": "",
             "label": "",
             "logGroups": [
@@ -228,28 +261,43 @@
             "region": "us-east-1",
             "sqlExpression": "",
             "statistic": "Average",
-            "statsGroups": [
-              "deviceId",
-              "sensorType"
-            ]
+            "statsGroups": []
           }
         ],
         "title": "Device State",
         "transformations": [
           {
-            "id": "extractFields",
+            "id": "convertFieldType",
             "options": {
-              "format": "kvp",
-              "keepTime": true,
-              "replace": true,
-              "source": "@message"
+              "conversions": [
+                {
+                  "destinationType": "string",
+                  "targetField": "deviceId"
+                }
+              ],
+              "fields": {}
+            }
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__log__grafana_internal__": true,
+                "__logstream__grafana_internal__": true,
+                "deviceId": false,
+                "sensorType": false,
+                "status": false
+              },
+              "includeByName": {},
+              "indexByName": {},
+              "renameByName": {}
             }
           }
         ],
         "type": "stat"
       }
     ],
-    "refresh": "",
     "schemaVersion": 39,
     "tags": [],
     "templating": {
@@ -263,6 +311,6 @@
     "timezone": "browser",
     "title": "Digital Twins",
     "uid": "bekz2fsk7krnkc",
-    "version": 2,
+    "version": 4,
     "weekStart": ""
   }
