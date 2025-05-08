@@ -264,7 +264,7 @@
             "statsGroups": []
           }
         ],
-        "title": "Device State",
+        "title": "Device Sensor State",
         "transformations": [
           {
             "id": "convertFieldType",
@@ -296,6 +296,421 @@
           }
         ],
         "type": "stat"
+      },
+      {
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "fej9hbao6xrlsf"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "status"
+              },
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {
+                      "options": {
+                        "0": {
+                          "color": "semi-dark-red",
+                          "index": 1,
+                          "text": "DOWN"
+                        },
+                        "1": {
+                          "color": "semi-dark-green",
+                          "index": 0,
+                          "text": "UP"
+                        }
+                      },
+                      "type": "value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 14
+        },
+        "id": 3,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "10.4.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "cloudwatch",
+              "uid": "fej9hbao6xrlsf"
+            },
+            "dimensions": {},
+            "expression": "fields @timestamp, deviceId, sensorType, status \r\n| sort @timestamp desc\r\n| limit 5",
+            "id": "",
+            "label": "",
+            "logGroups": [
+              {
+                "accountId": "746441023300",
+                "arn": "arn:aws:logs:us-east-1:746441023300:log-group:device_state:*",
+                "name": "device_state"
+              }
+            ],
+            "matchExact": true,
+            "metricEditorMode": 0,
+            "metricName": "",
+            "metricQueryType": 0,
+            "namespace": "",
+            "period": "",
+            "queryMode": "Logs",
+            "refId": "A",
+            "region": "us-east-1",
+            "sqlExpression": "",
+            "statistic": "Average",
+            "statsGroups": []
+          }
+        ],
+        "title": "Device Status Time",
+        "transformations": [
+          {
+            "id": "convertFieldType",
+            "options": {
+              "conversions": [
+                {
+                  "destinationType": "string",
+                  "targetField": "deviceId"
+                }
+              ],
+              "fields": {}
+            }
+          },
+          {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Time": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "deviceId": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "sensorType": {
+                  "aggregations": []
+                },
+                "status": {
+                  "aggregations": [
+                    "lastNotNull"
+                  ],
+                  "operation": "aggregate"
+                }
+              }
+            }
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": false,
+                "__log__grafana_internal__": true,
+                "__logstream__grafana_internal__": true,
+                "deviceId": true,
+                "sensorType": true,
+                "status": false
+              },
+              "includeByName": {},
+              "indexByName": {
+                "Time": 0,
+                "deviceId": 2,
+                "deviceId  sensorType": 1,
+                "sensorType": 3,
+                "status (lastNotNull)": 4
+              },
+              "renameByName": {
+                "status (lastNotNull)": "status"
+              }
+            }
+          }
+        ],
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "fej9hbao6xrlsf"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "fillOpacity": 80,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineWidth": 1,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "status"
+              },
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {
+                      "options": {
+                        "0": {
+                          "color": "semi-dark-red",
+                          "index": 1,
+                          "text": "DOWN"
+                        },
+                        "1": {
+                          "color": "semi-dark-green",
+                          "index": 0,
+                          "text": "UP"
+                        }
+                      },
+                      "type": "value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 21
+        },
+        "id": 4,
+        "options": {
+          "barRadius": 0,
+          "barWidth": 0.97,
+          "fullHighlight": false,
+          "groupWidth": 0.7,
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "orientation": "auto",
+          "showValue": "auto",
+          "stacking": "none",
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          },
+          "xField": "deviceId  sensorType",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0
+        },
+        "pluginVersion": "10.4.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "cloudwatch",
+              "uid": "fej9hbao6xrlsf"
+            },
+            "dimensions": {},
+            "expression": "fields @timestamp, deviceId, sensorType, status \r\n| sort @timestamp desc\r\n| limit 5",
+            "id": "",
+            "label": "",
+            "logGroups": [
+              {
+                "accountId": "746441023300",
+                "arn": "arn:aws:logs:us-east-1:746441023300:log-group:device_state:*",
+                "name": "device_state"
+              }
+            ],
+            "matchExact": true,
+            "metricEditorMode": 0,
+            "metricName": "",
+            "metricQueryType": 0,
+            "namespace": "",
+            "period": "",
+            "queryMode": "Logs",
+            "refId": "A",
+            "region": "us-east-1",
+            "sqlExpression": "",
+            "statistic": "Average",
+            "statsGroups": []
+          }
+        ],
+        "title": "Device Sensor Bar Status",
+        "transformations": [
+          {
+            "id": "convertFieldType",
+            "options": {
+              "conversions": [
+                {
+                  "destinationType": "string",
+                  "targetField": "deviceId"
+                }
+              ],
+              "fields": {}
+            }
+          },
+          {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Time": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "deviceId": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "sensorType": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "status": {
+                  "aggregations": [
+                    "lastNotNull"
+                  ],
+                  "operation": "aggregate"
+                }
+              }
+            }
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": false,
+                "__log__grafana_internal__": true,
+                "__logstream__grafana_internal__": true,
+                "deviceId": false,
+                "sensorType": false,
+                "status": false
+              },
+              "includeByName": {},
+              "indexByName": {},
+              "renameByName": {
+                "status (lastNotNull)": "status"
+              }
+            }
+          },
+          {
+            "id": "calculateField",
+            "options": {
+              "binary": {
+                "left": "deviceId",
+                "right": "sensorType"
+              },
+              "mode": "binary",
+              "reduce": {
+                "reducer": "sum"
+              },
+              "replaceFields": false
+            }
+          }
+        ],
+        "type": "barchart"
       }
     ],
     "schemaVersion": 39,
@@ -304,13 +719,13 @@
       "list": []
     },
     "time": {
-      "from": "now-6h",
+      "from": "now-1h",
       "to": "now"
     },
     "timepicker": {},
     "timezone": "browser",
     "title": "Digital Twins",
     "uid": "bekz2fsk7krnkc",
-    "version": 4,
+    "version": 6,
     "weekStart": ""
   }
