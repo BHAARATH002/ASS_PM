@@ -73,6 +73,8 @@ def lambda_handler(event, context):
     video_key = event.get("video_data")
     video_type = event.get("video_type")
     video_file_size = event.get("video_file_size")
+    distance_value = event.get("distance")
+    face_detect = event.get("face")
     
     # Validate required fields
     if not device_id or not timestamp or not image_data:
@@ -80,6 +82,17 @@ def lambda_handler(event, context):
         error_message = "Missing required fields: device_id, timestamp, or image_data."
         publish_mqtt_response(iot_client, error_message, "E001")
         return {"statusCode": 400, "error": error_message}
+
+    # Get severity information
+    if face_detect == True and distance_value <= 100:
+        severityLevel = "low"
+        alertTitle = "Low priority intruder Alert"
+    elif face_detect == True and distance_value > 100:
+        severityLevel = "medium"
+        alertTitle = "Medium priority intruder Alert"
+    elif face_detect == False:
+        severityLevel = "high"
+        alertTitle = "High priority intruder Alert"
     
     print("Event information received and validated.")
     
@@ -101,7 +114,11 @@ def lambda_handler(event, context):
             "device_id": str(device_id),
             "timestamp": timestamp,
             "image_path": image_key,
-            "video_path": video_key or "N/A"
+            "video_path": video_key or "N/A",
+            "distance_value": distance_value,
+            "face_detect": face_detect,
+            "severityLevel": severityLevel,
+            "alertTitle": alertTitle
         })
         print(f"Log stored in DynamoDB: {device_id}, {timestamp}")
     except Exception as e:
@@ -132,8 +149,8 @@ def lambda_handler(event, context):
         ],
         "deviceId": device_id,
         "alertMessage": "Intruder found. Please response!",
-        "alertTitle": "Critical intruder Alert",
-        "severityLevel": "high",
+        "alertTitle": alertTitle,
+        "severityLevel": severityLevel,
         "alertDatetime": formatted_time
     }
     print(f"Payload: {payload}")
