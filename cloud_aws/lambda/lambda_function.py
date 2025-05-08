@@ -173,7 +173,7 @@ def lambda_handler(event, context):
     # Send notification to user via SNS topic
     message = f"🚨 Intruder detected!\nDevice: {device_id}\nTime: {formatted_time} ({timestamp})\nImage: {image_key}\nVideo: {video_key}"
     try:
-        sns.publish(TopicArn=SNS_TOPIC_ARN, Message=message, Subject="🚨 Intruder Alert!")
+        sns.publish(TopicArn=SNS_TOPIC_ARN, Message=message, Subject=f"🚨 {alertTitle}!")
         print(f"Notification sent via SNS: {message}")
     except Exception as e:
         print(f"StatusCode: E006, ERROR:{str(e)}")
