@@ -67,9 +67,9 @@ def lambda_handler(event, context):
     
     device_id = event.get("device_id")
     timestamp = event.get("timestamp")
-    image_data = base64.b64decode(event.get("image_data"))
+    image_key = event.get("image_key")
     image_type = event.get("image_type")
-    image_file_size = len(image_data)
+    image_file_size = event.get("image_file_size")
     video_key = event.get("video_data")
     video_type = event.get("video_type")
     video_file_size = event.get("video_file_size")
@@ -77,9 +77,9 @@ def lambda_handler(event, context):
     face_detect = event.get("face")
     
     # Validate required fields
-    if not device_id or not timestamp or not image_data:
-        print(f"StatusCode: E001, ERROR: Missing required fields: device_id, timestamp, or image_data.")
-        error_message = "Missing required fields: device_id, timestamp, or image_data."
+    if not device_id or not timestamp or not image_key:
+        print(f"StatusCode: E001, ERROR: Missing required fields: device_id, timestamp, or image_key.")
+        error_message = "Missing required fields: device_id, timestamp, or image_key."
         publish_mqtt_response(iot_client, error_message, "E001")
         return {"statusCode": 400, "error": error_message}
 
@@ -95,17 +95,6 @@ def lambda_handler(event, context):
         alertTitle = "High priority intruder Alert"
     
     print("Event information received and validated.")
-    
-    # Store data to S3
-    image_key = f"image/{device_id}/{timestamp}.{image_type}"
-    try:
-        s3.put_object(Bucket=BUCKET_NAME, Key=image_key, Body=image_data)
-        print(f"Image stored at S3: {image_key}")
-    except Exception as e:
-        print(f"StatusCode: E003, ERROR: {str(e)}")
-        error_message = f"Failed to store image in S3: {image_key}"
-        publish_mqtt_response(iot_client, error_message, "E003")
-        return {"statusCode": 500, "error": error_message}
 
     # Store log info to DynamoDB
     try:
@@ -113,7 +102,7 @@ def lambda_handler(event, context):
         table.put_item(Item={
             "device_id": str(device_id),
             "timestamp": timestamp,
-            "image_path": image_key,
+            "image_path": image_key or "N/A",
             "video_path": video_key or "N/A",
             "distance_value": distance_value,
             "face_detect": face_detect,
