@@ -1,3 +1,21 @@
+# Create a new EC2 key pair
+resource "aws_key_pair" "control" {
+  key_name   = "control"
+  public_key = tls_private_key.control.public_key_openssh
+}
+
+# Generate a private key
+resource "tls_private_key" "control" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+# Save the private key to a file
+resource "local_file" "control_key" {
+  content  = tls_private_key.control.private_key_pem
+  filename = "control.pem"
+}
+
 # Fetch the VPC
 data "aws_vpc" "main" {
   filter {
@@ -57,6 +75,7 @@ data "aws_ami" "amazon_linux" {
   owners = ["amazon"]
 }
 
+# The instance profile role is from the IAM role called WebServerRole under the folder /iam_role/ec2/
 data "aws_iam_instance_profile" "web_instance_profile" {
   name = "WebServerInstanceProfile"
 }
@@ -221,4 +240,9 @@ resource "aws_autoscaling_attachment" "asg_attachment_8080" {
 resource "aws_autoscaling_attachment" "asg_attachment_81" {
   autoscaling_group_name = aws_autoscaling_group.asg.id
   lb_target_group_arn    = aws_lb_target_group.tg_81.arn
+}
+
+output "private_key" {
+  value     = tls_private_key.control.private_key_pem
+  sensitive = true
 }
