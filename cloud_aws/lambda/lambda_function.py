@@ -77,9 +77,9 @@ def lambda_handler(event, context):
     face_detect = event.get("face")
     
     # Validate required fields
-    if not device_id or not timestamp or not image_key:
-        print(f"StatusCode: E001, ERROR: Missing required fields: device_id, timestamp, or image_key.")
-        error_message = "Missing required fields: device_id, timestamp, or image_key."
+    if not device_id or not timestamp or not image_key or not video_key or not face_detect:
+        print(f"StatusCode: E001, ERROR: Missing required fields: device_id, timestamp, image_key, video_key or face_detect.")
+        error_message = "Missing required fields: device_id, timestamp, image_key, video_key or face_detect."
         publish_mqtt_response(iot_client, error_message, "E001")
         return {"statusCode": 400, "error": error_message}
 
